@@ -1,71 +1,103 @@
 
-import './App.css';
 import React, { useState } from "react";
-import DatePicker from 'react-datepicker';
+
 import { registerLocale, setDefaultLocale } from  "react-datepicker";
 import fr from 'date-fns/locale/fr-CH';
-import "react-datepicker/dist/react-datepicker.css";
+
+import isBefore from 'date-fns/isBefore';
 
 import ButtonBar from './ButtonBar';
-import { DommageDentaire } from './DommageDentaire';
+import { OtherEmployers } from "./OtherEmployers";
+import { CheckBox } from './CheckBox';
 import { InterruptionForm } from './InterruptionForm';
+import { TextInput } from "./TextInput";
+import { DateInput } from "./DateInput";
+import { TimeInput } from "./TimeInput";
+
+function hasDateError(startDate, endDate) {
+  if (startDate && endDate) {
+
+    return isBefore(endDate, startDate);
+  }
+  return false;
+}
+
 
 
 function App() {
-  const [startDate, setStartDate] = useState();
+  const [accidentDate, setAccidentDate] = useState();
   const [time, setTime] = useState();
+  const [lieu, setLieu] = useState();
   const [arretChecked, setArretChecked] = useState(false);
+  const [interruptionStartDate, setInterruptionStartDate] = useState();
+  const [interruptionEndDate, setInterruptionEndDate] = useState();
+
+  const isValid = function() {
+    if (!lieu) {
+      return false;
+    }
+    if (arretChecked) {
+      
+      return interruptionStartDate && interruptionEndDate && !hasDateError(interruptionStartDate, interruptionEndDate);
+    }
+    return true;
+  }
+
   registerLocale('fr', fr);
   return (
     <div className="App container">
-      <h2 className='h2'>Déclaration d'accident</h2>
-      <ButtonBar/>
+      <h2 className='h2'>je déclare un accident</h2>
+      <ButtonBar showSend={isValid()}/>
       
 
-        <label for="lieuInput" className="form-label" >Lieu</label>
-
-          <input type="text" className="form-control" id="lieuInput" aria-describedby="emailHelp"
-            placeholder='Ville, NPA ou lieu'/>
-
-
-        <label className="form-label" htmlFor="dateAccident">Date</label>
-        <DatePicker 
-          id="dateAccident"
-          className="form-control" 
-          selected={startDate} 
-          onChange={(date) => setStartDate(date)} 
-          locale="fr"
-          dateFormat='dd/MM/yyyy'
+      <TextInput 
+        label="Lieu"
+        placeholder='Ville, NPA ou lieu'
+        onChange={(event) => setLieu(event.target.value)}
+        formId='lieu'
         />
- 
 
-      <label htmlFor="heureAccident">Heure</label>
-      <DatePicker 
-        id="heureAccident"
-        selected={time} 
+      <DateInput 
+        label="Date de l'accident"
+        date={accidentDate}
+        onChange={(date) => setAccidentDate(date)} />
+
+      <TimeInput
+        label="Heure"
+        time={time} 
         onChange={(time) => setTime(time)} 
-        showTimeSelect
-        showTimeSelectOnly
-        locale="fr"
-        dateFormat='HH:mm'
+    
       />
 
-      <div class="form-check">
-        <input className="form-check-input" type="checkbox" 
-          id="gridCheck"
-          checked={arretChecked}
-          onChange={() => setArretChecked(!arretChecked)}/>
+      <CheckBox label="Arrêt de travail">
+        <div>
+          <DateInput 
+              label="Date de début"
+              onChange={setInterruptionStartDate}
+              date={interruptionStartDate} 
+          />
+          <DateInput 
+              label="Date de fin"
+              onChange={setInterruptionEndDate}
+              date={interruptionEndDate} 
+          />
 
-        <label className="form-check-label" for="gridCheck">
-          Arrêt de travail
-        </label>
+        {hasDateError(interruptionStartDate, interruptionEndDate) &&
+          <div className="text-danger">
+              La date de fin doit être après la date début
+            </div>
+        }
       </div>
-      {arretChecked &&
-        <InterruptionForm/>
-      }
-      <DommageDentaire/>
+      </CheckBox>
 
+        
 
+      <CheckBox label="Dommage dentaire"/>
+      <CheckBox label="Maladie professionnelle"/>
+
+      <label className="form-check-label" htmlFor="flexRadioDefault1">
+          Type de l'accident
+        </label>
       <div className="form-check">
         <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"></input>
         <label className="form-check-label" htmlFor="flexRadioDefault1">
@@ -73,11 +105,32 @@ function App() {
         </label>
       </div>
       <div className="form-check">
-        <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked></input>
+        <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2"></input>
         <label className="form-check-label" htmlFor="flexRadioDefault2">
           Professionnel
         </label>
       </div>
+
+      <OtherEmployers/>
+      <CheckBox label="Absence au moment de l'accident"/>
+
+      Rapport de police
+      <div className="form-check">
+        <input className="form-check-input" type="radio" name="flexRadioDefault" id="police1"></input>
+        <label className="form-check-label" htmlFor="police1">
+          Oui
+        </label>
+      </div>
+      <div className="form-check">
+        <input className="form-check-input" type="radio" name="flexRadioDefault" id="police2"></input>
+        <label className="form-check-label" htmlFor="police2">
+          Non
+        </label>
+      </div>
+    
+      <p>Description de l'accident, Blessures, rapport de police, équipements de travail (à conditionner), Médecin premiers soins,
+        médecin suite, personnes impliquées / témoins de l'accident (textarea)
+      </p>
     </div>
   );
 }

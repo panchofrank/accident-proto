@@ -1,30 +1,26 @@
 import React, { useState } from "react";
 import DatePicker from 'react-datepicker';
-export function InterruptionForm() {
-    const [startDate, setStartDate] = useState();
-    const [endDate, setEndDate] = useState();
+import { DateInput } from "./DateInput";
+export function InterruptionForm(props) {
+    
   return(
     <div>
-        <label className="form-label" htmlFor="dateAccident">Date de début</label>
-        <DatePicker 
-          id="dateAccident"
-          className="form-control" 
-          selected={startDate} 
-          onChange={(date) => setStartDate(date)} 
-          locale="fr"
-          dateFormat='dd/MM/yyyy'
+        <DateInput 
+            label="Date de début"
+            onChange={props.onChangeStartDate}
+            date={props.startDate} 
+        />
+<DateInput 
+            label="Date de fin"
+            onChange={props.onChangeEndDate}
+            date={props.endDate} 
         />
 
-<label className="form-label" htmlFor="dateAccident">Date de fin</label>
-        <DatePicker 
-          id="dateAccident"
-          className="form-control" 
-          selected={endDate} 
-          onChange={(date) => setEndDate(date)} 
-          locale="fr"
-          dateFormat='dd/MM/yyyy'
-        />
-
+    {props.dateError &&
+    <div className="text-danger">
+        La date de fin doit être après la date début
+      </div>
+}
     </div>
   );
 }
